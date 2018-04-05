@@ -1,53 +1,50 @@
-local checkWeapons = true
-local checkVisible = true
-local checkInvincible = true
-local checkSpectator = true
+local checks
 
-local badWeapons = {
-  'weapon_ball',
-  'weapon_railgun',
-}
+RegisterNetEvent('antiretard:set', function(_checks)
+  checks = _checks
+end)
 
 Citizen.CreateThread(function()
-  local ped = PlayerPedId()
+  -- Wait for the server to send us what we should check for.
+  repeat
+    Citizen.Wait(1000)
+  until checks
 
-  -- Check for bad weapons.
-  if checkWeapons then
-    for i = 1, #badWeapons do
-      local badWeapon = badWeapons[i]
-      if HasPedGotWeapon(ped, badWeapon, true) then
-        -- Has a bad weapon, report it.
+  while true do
+    local ped = PlayerPedId()
+
+    if checks.weapons then
+      for i = 1, #checks.weapons.bad do
+        local bad = checks.weapons.bad[i]
+        if HasPedGotWeapon(ped, bad, true) then
+        end
+      end
+
+    elseif checks.visible then
+      if not IsEntityVisible(ped) then
+      end
+
+    elseif checks.invincible then
+      local health = GetEntityHealth(ped)
+
+      if health > 1 then
+        SetEntityHealth(ped, (health - 1))
+      else
+        SetEntityHealth(ped, (health + 1))
+      end
+
+      if health == GetEntityHealth(ped) then
+
+      end
+
+      SetEntityHealth(ped, health)
+
+    elseif checks.spectator then
+      if NetworkIsInSpectatorMode() then
+
       end
     end
 
-  -- Check the players visiblity.
-  elseif checkVisible then
-    if not IsEntityVisible(ped) then
-      -- Invisible, report it.
-    end
-
-  -- Check  for invincibility.
-  elseif checkInvincible then
-    local health = GetEntityHealth(ped)
-
-    if health > 1 then
-      SetEntityHealth(ped, (health - 1))
-    else
-      SetEntityHealth(ped, (health + 1))
-    end
-
-    if health == GetEntityHealth(ped) then
-      -- Health didn't change, report it.
-    end
-
-    SetEntityHealth(ped, health)
-
-  -- Check if the player is spectating.
-  elseif checkSpectator then
-    if NetworkIsInSpectatorMode() then
-      -- Spectating, report it.
-    end
+    Citizen.Wait(1000)
   end
-
-  Citizen.Wait(1000)
 end)
