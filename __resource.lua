@@ -1,2 +1,2 @@
-client_script 'antiretard_cl.lua'
-server_script 'anticheat_sv.lua'
+client_script 'client/antiretard.lua'
+server_script 'server/anticheat.lua'
